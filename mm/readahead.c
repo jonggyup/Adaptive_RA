@@ -412,6 +412,13 @@ ondemand_readahead(struct address_space *mapping,
 		goto readit;
 	}
 
+	if (ra->ra_hits*2 >= ra->size) {
+		ra->start += ra->size;
+		ra->size = get_next_ra_size(ra, max_pages);
+		ra->async_size = ra->size;
+		goto readit;
+	}
+
 	/*
 	 * Hit a marked page without valid readahead state.
 	 * E.g. interleaved reads.
@@ -424,7 +431,7 @@ ondemand_readahead(struct address_space *mapping,
 	 * Disabled hit_readahead_marker checking
 	 */
 
-//	if (hit_readahead_marker) {
+	if (hit_readahead_marker) {
 		pgoff_t start;
 
 		rcu_read_lock();
@@ -440,7 +447,7 @@ ondemand_readahead(struct address_space *mapping,
 		ra->size = get_next_ra_size(ra, max_pages);
 		ra->async_size = ra->size;
 		goto readit;
-//	}
+	}
 
 	/*
 	 * oversize read
