@@ -33,6 +33,7 @@ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 {
 	ra->ra_pages = inode_to_bdi(mapping->host)->ra_pages;
 	ra->prev_pos = -1;
+	ra->ra_hits = 1; /* Added by Jonggyu */
 }
 EXPORT_SYMBOL_GPL(file_ra_state_init);
 
