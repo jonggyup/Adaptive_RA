@@ -2080,10 +2080,12 @@ find_page:
 			page_cache_sync_readahead(mapping,
 					ra, filp,
 					index, last_index - index);
+			ra->ra_hits--; /* Added by Jonggyu */
 			page = find_get_page(mapping, index);
 			if (unlikely(page == NULL))
 				goto no_cached_page;
 		}
+		ra->ra_hits++; /* Added by Jonggyu */
 		if (PageReadahead(page)) {
 			page_cache_async_readahead(mapping,
 					ra, filp, page,
