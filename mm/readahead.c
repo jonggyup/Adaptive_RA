@@ -33,7 +33,7 @@ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 {
 	ra->ra_pages = inode_to_bdi(mapping->host)->ra_pages;
 	ra->prev_pos = -1;
-	ra->ra_hits = 1; /* Added by Jonggyu */
+	ra->ra_hits = 0; /* Added by Jonggyu */
 }
 EXPORT_SYMBOL_GPL(file_ra_state_init);
 
@@ -411,11 +411,14 @@ ondemand_readahead(struct address_space *mapping,
 		ra->async_size = ra->size;
 		goto readit;
 	}
-
-	if (ra->ra_hits*2 >= ra->size) {
+	
+	/* Added by Jonggyu */
+//	printk("ra_hits = %d, ra->size = %d", ra->ra_hits, ra->size);
+	if (ra->prev_pos + ra->size > ra->start || ra->ra_hits*2 <= ra->size) {
 		ra->start += ra->size;
 		ra->size = get_next_ra_size(ra, max_pages);
 		ra->async_size = ra->size;
+		ra->ra_hits = 0;
 		goto readit;
 	}
 
