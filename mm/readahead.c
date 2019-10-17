@@ -409,12 +409,16 @@ ondemand_readahead(struct address_space *mapping,
 		ra->start += ra->size;
 		ra->size = get_next_ra_size(ra, max_pages);
 		ra->async_size = ra->size;
+		ra->ra_hits = 0;
 		goto readit;
 	}
 	
 	/* Added by Jonggyu */
-//	printk("ra_hits = %d, ra->size = %d", ra->ra_hits, ra->size);
-	if (ra->prev_pos + ra->size > ra->start || ra->ra_hits*2 <= ra->size) {
+//	printk("ra_hits = %d, ra->size = %d ra->prev_pos = %lu, ra->start = %lu, offset = %lu", ra->ra_hits, ra->size, ra->prev_pos >> PAGE_SHIFT, ra->start, offset);
+// && ra->prev_pos + ra->size > ra->start 
+
+	if (ra->ra_hits*8 >= (int)ra->size || ((unsigned long long)offset - ((unsigned long long)ra->prev_pos >> PAGE_SHIFT) <= 8 && ra->start==0)){
+//		if (true) { // always readahead on
 		ra->start += ra->size;
 		ra->size = get_next_ra_size(ra, max_pages);
 		ra->async_size = ra->size;
@@ -427,11 +431,6 @@ ondemand_readahead(struct address_space *mapping,
 	 * E.g. interleaved reads.
 	 * Query the pagecache for async_size, which normally equals to
 	 * readahead size. Ramp it up and use it as the new readahead size.
-	 */
-
-	/* 
-	 * Modified by Jonggyu
-	 * Disabled hit_readahead_marker checking
 	 */
 
 	if (hit_readahead_marker) {
@@ -448,7 +447,9 @@ ondemand_readahead(struct address_space *mapping,
 		ra->size = start - offset;	/* old async_size */
 		ra->size += req_size;
 		ra->size = get_next_ra_size(ra, max_pages);
-		ra->async_size = ra->size;
+		ra->async_size = ra->size;\
+		ra->ra_hits = 0;
+
 		goto readit;
 	}
 
@@ -463,6 +464,8 @@ ondemand_readahead(struct address_space *mapping,
 	 * trivial case: (offset - prev_offset) == 1
 	 * unaligned reads: (offset - prev_offset) == 0
 	 */
+
+	ra->ra_hits = 0;
 	prev_offset = (unsigned long long)ra->prev_pos >> PAGE_SHIFT;
 	if (offset - prev_offset <= 1UL)
 		goto initial_readahead;
