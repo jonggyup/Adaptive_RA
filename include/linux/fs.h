@@ -887,7 +887,7 @@ struct file_ra_state {
 	unsigned int ra_pages;		/* Maximum readahead window */
 	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
 
-	int ra_hits;		/* Readahead hit ratio, added by Jonggyu */
+	int ra_hits;		/* Readahead hit ratio, added by Jonggyu & Youngik EOom */
 
 	loff_t prev_pos;		/* Cache last read() position */
 };
